@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1030621677190",
+    "project_id": "quanlychitieu-fc17b",
+    "storage_bucket": "quanlychitieu-fc17b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1030621677190:android:8661c82c8d78ca3773b307",
+        "android_client_info": {
+          "package_name": "com.example.quan_ly_chi_tieu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1030621677190-659baef57jsflvl3lqg2nm8ql44bs7lo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4IfAMIUc3oeMeN20ev1aGlis_PvK5fAs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1030621677190-659baef57jsflvl3lqg2nm8ql44bs7lo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
