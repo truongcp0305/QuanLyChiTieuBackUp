@@ -59,7 +59,7 @@ class _ScheduleState extends State<Schedule> {
                        child: Container(
                          height: 50,
                          width: double.infinity,
-                         child: Center(
+                         child: const Center(
                            child: Text(
                              'Bạn chưa có hạn mức chi tiêu nào\n'
                                  '        Hãy thêm hạn mức mới!',

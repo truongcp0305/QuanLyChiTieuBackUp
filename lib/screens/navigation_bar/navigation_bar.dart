@@ -24,13 +24,13 @@ class _NavigationState extends State<Navigation> {
         'page' : const Home()
       },
       {
-        'page' :  MainChart()
-      },
-      {
-        'page' : const UserDetail()
+        'page' :  const MainChart()
       },
       {
         'page' : const Schedule()
+      },
+      {
+        'page' : const UserDetail()
       }
 
     ];
@@ -67,14 +67,14 @@ class _NavigationState extends State<Navigation> {
                 label: 'Chart'
             ),
             BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                tooltip: 'User',
-                label: 'User'
+                icon: Icon(Icons.list_alt_sharp),
+                tooltip: 'Plan',
+                label: 'Plan'
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.list_alt_sharp),
-              tooltip: "test",
-              label: "test"
+              icon: Icon(Icons.person),
+              tooltip: "User",
+              label: "User"
             )
           ],
         ),

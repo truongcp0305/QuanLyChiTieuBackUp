@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -130,7 +132,7 @@ class _HomeState extends State<Home> {
               height: 132,
               padding: const EdgeInsets.all(15),
               decoration: const BoxDecoration(
-                color: Colors.white,
+                color: Color(0xffe7e9ee),
                 borderRadius: BorderRadius.all(Radius.circular(20))
               ),
               child: Column(
@@ -143,7 +145,7 @@ class _HomeState extends State<Home> {
                   Container(
                     margin: const EdgeInsets.only(top: 25),
                     decoration: BoxDecoration(
-                      border: BorderDirectional(top: BorderSide(width: 0.8, color: Colors.grey.shade300))
+                      border: BorderDirectional(top: BorderSide(width: 0.8, color: Colors.grey.shade300)),
                     ),
                     child: ListTile(
                       title: const Text(
@@ -182,7 +184,7 @@ class _HomeState extends State<Home> {
               padding: const EdgeInsets.all(15),
               margin: const EdgeInsets.only(top: 10),
               decoration: const BoxDecoration(
-                  color: Colors.white,
+                  color: Color(0xffe7e9ee),
                   borderRadius: BorderRadius.all(Radius.circular(20))
               ),
               child: Column(
@@ -234,7 +236,7 @@ class _HomeState extends State<Home> {
               //height: 200,
               padding: const EdgeInsets.all(15),
               decoration: const BoxDecoration(
-                  color: Colors.white,
+                  color: Color(0xffe7e9ee),
                   borderRadius: BorderRadius.all(Radius.circular(20))
               ),
               child: Column(
@@ -318,8 +320,9 @@ class _TopSpendingState extends State<TopSpending> {
   }
   @override
   Widget build(BuildContext context) {
+    AsyncData sevice = AsyncData();
     return FutureBuilder<List<SpendingModel>>(
-      future: topSpendingData(),
+      future: sevice.GetTopSpendingThisWeek(),
       builder: (context, AsyncSnapshot<List<SpendingModel>> snapshot){
         if(snapshot.hasData){
           List<SpendingModel> data = snapshot.data!;
@@ -332,7 +335,7 @@ class _TopSpendingState extends State<TopSpending> {
             child:
                  Column(
                    children: [
-                     for(var index=0; index<data.length; index++)
+                     for(var index=0; index< data.length; index++)
                      ListTile(
                       onTap: (){
                         Get.to(()=> SpendingDetail(spendModel: data[index],));
