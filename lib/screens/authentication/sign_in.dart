@@ -3,6 +3,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_chi_tieu/screens/authentication/register.dart';
+import 'package:quan_ly_chi_tieu/screens/authentication/reset_password.dart';
 
 import '../../services/auth.dart';
 import '../navigation_bar/navigation_bar.dart';
@@ -109,6 +110,17 @@ class _SignInState extends State<SignIn> {
                     )
                   ]
               ),
+            ),
+            const SizedBox(
+              height: 30,
+            ),
+             RichText(
+                text:  TextSpan(
+                  text: "Forgot password?",
+                  style: const TextStyle(color: Colors.green, fontSize: 14),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = (){Get.to(()=> const ResetPassword());}
+                )
             ),
             const SizedBox(height: 40,),
             Obx(()=> Center(

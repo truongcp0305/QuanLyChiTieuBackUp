@@ -17,6 +17,16 @@ class AsyncData{
   final oneWeek = const Duration(days: 7);
   final oneMonth = const Duration(days: 30);
   final twoWeek = const Duration(days: 14);
+  List<MaterialColor> colors = [
+    Colors.orange,
+    Colors.lightBlue,
+    Colors.brown, Colors.indigo, Colors.red, Colors.green,
+    Colors.deepPurple, Colors.grey, Colors.purple,
+    Colors.yellow, Colors.deepPurple, Colors.blueGrey,
+    Colors.lightGreen, Colors.indigo, Colors.lightBlue,
+    Colors.red, Colors.teal, Colors.deepOrange,
+    Colors.lightGreen, Colors.brown, Colors.pink,
+  ];
 
   Future<List<SpendingModel>> getAll()async{
     List<SpendingModel> snapshot = [];
@@ -37,6 +47,67 @@ class AsyncData{
         );
     }
     return snapshot;
+  }
+
+  Future<List<SpendingModel>> GetTopSpendingThisWeek()async{
+    List<SpendingModel> data = [];
+    List<SpendingModel> snapshot=[];
+    String dateNow = format.format(DateTime.now());
+    Duration weekDay;
+    String E = DateFormat('EEE').format(DateTime.now());
+    switch(E){
+      case 'Mon': weekDay = const Duration(days: 0); break;
+      case 'Tue': weekDay = const Duration(days: 1); break;
+      case 'Wed': weekDay = const Duration(days: 2); break;
+      case 'Thu': weekDay = const Duration(days: 3); break;
+      case 'Fri': weekDay = const Duration(days: 4); break;
+      case 'Sat': weekDay = const Duration(days: 5); break;
+      case 'Sun': weekDay = const Duration(days: 6); break;
+      default : weekDay = const Duration(days: 0); break;
+    }
+    var res = await FirebaseFirestore.instance
+        .collection(auth.currentUser?.email.toString()??'unknow')
+        .get();
+    for(var doc in res.docs ){
+      String date = doc['time'];
+      Duration sub = format.parse(dateNow).difference(format.parse(date));
+      if(sub<=weekDay){
+        if(doc['type']=='-'){
+          data.add(
+              SpendingModel(
+                  id: doc['id'],
+                  money: doc['money'],//double.parse(doc['money'].toString().replaceAll(',', '')),
+                  icon: doc['icon'],
+                  category: doc['category'],
+                  time: doc['time'],
+                  type: doc['type'],
+                  note: doc['note']
+              )
+          );
+        }
+      }
+    }
+
+    SpendingModel tg;
+    for(var s=0 ; s< data.length -1; s++){
+      for(var i= s+1; i< data.length; i++){
+        if(
+        double.parse(data[s].money.toString().replaceAll(',', ''))
+        < double.parse(data[i].money.toString().replaceAll(',', ''))
+        ){
+          tg = data[s];
+          data[s] = data[i];
+          data[i] = tg;
+        }
+      }
+    }
+    for(var i=0; i<data.length; i++){
+      if(i==3){
+        return snapshot;
+      }
+      snapshot.add(data[i]);
+    }
+    return data;
   }
 
   Future<List<ChartPData>> getPieChartData()async{
@@ -104,26 +175,30 @@ class AsyncData{
         .collection(auth.currentUser?.email.toString()??'unknow')
         .get();
     if(date.length >= 4){
+      var i = 0;
       for(var doc in data.docs){
+        i++;
         if(doc['time']==date){
           chartData.add(
               ChartPData(
                   x: doc['category'],
                   y: double.parse(doc['money'].toString().replaceAll(',', '')),
-                  color: Colors.primaries[Random().nextInt(Colors.primaries.length)]
+                  color: colors[i]//Colors.primaries[Random().nextInt(Colors.primaries.length)]
               )
           );
         }
       }
     }else{
+      var i = 0;
       for(var doc in data.docs){
+        i++;
         String docMonth = DateFormat('MM').format(format.parse(doc['time']));
         if(docMonth == date){
           chartData.add(
               ChartPData(
                   x: doc['category'],
                   y: double.parse(doc['money'].toString().replaceAll(',', '')),
-                  color: Colors.primaries[Random().nextInt(Colors.primaries.length)]
+                  color: colors[i]//Colors.primaries[Random().nextInt(Colors.primaries.length)]
               )
           );
         }
@@ -211,6 +286,7 @@ class AsyncData{
     return balance;
   }
 
+
   Future<String> getPlanPercent(String category, String plan)async{
     double sum = 0.0;
     String monthNow = DateFormat('MM').format(DateTime.now());
@@ -222,10 +298,9 @@ class AsyncData{
       String docMonth = DateFormat('MM').format(format.parse(doc['time']));
       if(docMonth == monthNow && doc['category']==category){
         sum += double.parse(doc['money'].toString().replaceAll(',', ''));
-        print('sum=${sum}');
       }
     }
-    result = "${sum / double.parse(plan)*100}";
+    result = "${(sum / double.parse(plan)*100).toStringAsFixed(2)}";
     return result;
   }
 
