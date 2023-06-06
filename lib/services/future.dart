@@ -87,6 +87,7 @@ class AsyncData{
         }
       }
     }
+
     SpendingModel tg;
     for(var s=0 ; s< data.length -1; s++){
       for(var i= s+1; i< data.length; i++){
