@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:pattern_formatter/numeric_formatter.dart';
 import 'package:quan_ly_chi_tieu/screens/add_screen/category.dart';
+import 'package:quan_ly_chi_tieu/services/future.dart';
+import '../../repository/api.dart';
 import '../navigation_bar/navigation_bar.dart';
 
 class Add extends StatefulWidget {
@@ -21,6 +23,8 @@ class _AddState extends State<Add> {
   @override
   Widget build(BuildContext context) {
     FirebaseAuth auth = FirebaseAuth.instance;
+    final IdService = Api();
+    final service = AsyncData();
     TextEditingController moneyController = TextEditingController();
     TextEditingController noteController = TextEditingController();
     TextEditingController dateController = TextEditingController();
@@ -183,20 +187,13 @@ class _AddState extends State<Add> {
                 String renId = DateTime.now().toString();
                 List<String> id = [];
                 id.add(renId);
-                await FirebaseFirestore.instance
-                    .collection(auth.currentUser?.email.toString()??'unknow')
-                    .doc(id[0]).set(
-                    {
-                      'id': id[0],//DateTime.now().toString(),
-                      'money': moneyController.text,
-                      'category': widget.keys,
-                      'icon': widget.value,
-                      'time': DateFormat('dd/MM/yyyy').format(myDate),
-                      'note': noteController.text,
-                      'type': widget.type
-                    }
-                );
-                Get.snackbar('Thành công!', 'Bạn đã thêm một khoản chi tiêu', backgroundColor: Colors.white24);
+                var uid = IdService.generateUUID();
+                var res = await service.createBill(uid, moneyController.text, widget.type, widget.value, widget.keys, DateFormat('yyyy-MM-dd').format(myDate),myDate, noteController.text);
+                if (res){
+                  Get.snackbar('Thành công!', 'Bạn đã thêm một khoản chi tiêu', backgroundColor: Colors.white24);
+                }else{
+                  Get.snackbar('Lỗi!', 'Không thể thêm khoản chi tiêu', backgroundColor: Colors.redAccent);
+                }
                 Get.off(const Navigation());
               }
             },

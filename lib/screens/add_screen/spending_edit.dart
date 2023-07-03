@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:pattern_formatter/numeric_formatter.dart';
 import 'package:quan_ly_chi_tieu/models/spending_model.dart';
+import 'package:quan_ly_chi_tieu/services/future.dart';
 import '../navigation_bar/navigation_bar.dart';
 
 class SpendingEdit extends StatefulWidget {
@@ -18,6 +19,7 @@ class SpendingEdit extends StatefulWidget {
 class _SpendingEdit extends State<SpendingEdit> {
   @override
   Widget build(BuildContext context) {
+    final service = AsyncData();
     FirebaseAuth auth = FirebaseAuth.instance;
     TextEditingController moneyController = TextEditingController();
     moneyController.text = widget.spendingModel.money;
@@ -181,19 +183,7 @@ class _SpendingEdit extends State<SpendingEdit> {
               if(moneyController.text.isEmpty){
                 Get.snackbar('Lỗi!', 'Số tiền của bạn không được để trống', backgroundColor: Colors.green);
               }else{
-                await FirebaseFirestore.instance
-                    .collection(auth.currentUser?.email.toString()??'unknow')
-                    .doc(widget.spendingModel.id).update(
-                    {
-                      'id': widget.spendingModel.id,//DateTime.now().toString(),
-                      'money': moneyController.text,
-                      'category': widget.spendingModel.category,
-                      'icon': widget.spendingModel.icon,
-                      'time': DateFormat('dd/MM/yyyy').format(myDate),
-                      'note': noteController.text,
-                      'type': widget.spendingModel.type
-                    }
-                );
+                await service.updateBill(widget.spendingModel.id, moneyController.text, widget.spendingModel.category, widget.spendingModel.icon, DateFormat('dd/MM/yyyy').format(myDate),DateFormat('yyy/MM/dd').format(myDate),  noteController.text, widget.spendingModel.type);
                 Get.off(const Navigation());
               }
             },

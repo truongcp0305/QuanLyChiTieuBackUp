@@ -1,10 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:flutter/material.dart';
 import 'package:quan_ly_chi_tieu/screens/add_screen/spending_edit.dart';
 import 'package:quan_ly_chi_tieu/models/spending_model.dart';
 import 'package:get/get.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../repository/api.dart';
 import '../home_screen/home.dart';
 import '../navigation_bar/navigation_bar.dart';
 
@@ -14,7 +14,7 @@ class SpendingDetail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    FirebaseAuth auth = FirebaseAuth.instance;
+    final apiService = Api();
     return Scaffold(
       appBar: AppBar(
         title: const Text("Chi tiết giao dịch", style: TextStyle(color: Colors.white),),
@@ -153,7 +153,7 @@ class SpendingDetail extends StatelessWidget {
                     ),
                     const SizedBox(width: 30,),
                     IconButton(
-                      onPressed: (){
+                      onPressed: ()async{
                         Get.defaultDialog(
                           radius: 10,
                           buttonColor: Colors.green,
@@ -161,9 +161,8 @@ class SpendingDetail extends StatelessWidget {
                           confirmTextColor: Colors.white,
                           middleText: "Bạn có muốn xoá không?",
                           onCancel: (){},
-                          onConfirm: (){
-                            FirebaseFirestore.instance.collection(auth.currentUser?.email.toString()??'unknow')
-                                .doc(spendModel.id).delete();
+                          onConfirm: ()async{
+                            await apiService.deleteBill(spendModel.id);
                             Get.off(()=> const Navigation());
                           }
                         );
