@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:quan_ly_chi_tieu/models/plan_model.dart';
 import 'package:quan_ly_chi_tieu/screens/plan/category_plan_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -19,6 +20,7 @@ class Schedule extends StatefulWidget {
 class _ScheduleState extends State<Schedule> {
   FirebaseAuth auth = FirebaseAuth.instance;
   AsyncData sevice = AsyncData();
+  NumberFormat numberFormat = NumberFormat("#,##0", "en_US");
 
   Stream<QuerySnapshot> snapshot(){
     String coll = auth.currentUser?.email.toString()??'unknow';
@@ -91,7 +93,7 @@ class _ScheduleState extends State<Schedule> {
                            data[index].key
                          ),
                          subtitle: Text(
-                           data[index].plan
+                           numberFormat.format(double.parse(data[index].plan))
                          ),
                          trailing: FutureBuilder<String>(
                            future: sevice.getPlanPercent(data[index].key, data[index].plan),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_chi_tieu/screens/bars/schedule.dart';
+import 'package:quan_ly_chi_tieu/services/future.dart';
 
 class SetPlan extends StatelessWidget {
   final String value;
@@ -12,6 +13,7 @@ class SetPlan extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     FirebaseAuth auth = FirebaseAuth.instance;
+    final service = AsyncData();
     TextEditingController controller = TextEditingController();
     return Scaffold(
       appBar: AppBar(
@@ -44,27 +46,11 @@ class SetPlan extends StatelessWidget {
           SizedBox(height: 30,),
           ElevatedButton(
               onPressed: () async{
-                List a =[];
-                String coll = auth.currentUser?.email.toString()??'unknow';
-                QuerySnapshot d= await FirebaseFirestore.instance.collection("${coll}plan")
-                    .where('keys', isEqualTo: keys).get();
-                for(var doc in d.docs){
-                  a.add(doc);
-                }
-                if(a.isEmpty){
-                  if(controller.text != null){
-                    String coll = auth.currentUser?.email.toString()??'unknow';
-                    await FirebaseFirestore.instance.collection("${coll}plan")
-                        .doc(keys).set(
-                        {
-                          "keys": keys,
-                          "value": value,
-                          "plan": controller.text
-                        }
-                    );
-                    Get.snackbar('Thành công!', 'Bạn đã thêm hạn mức chi tiêu mỗi tháng', backgroundColor: Colors.green);
-                    Get.to(()=>Schedule());
-                  }
+
+                var res = await service.createPlan(keys, controller.text, value);
+                if (res == true){
+                  Get.snackbar('Thành công!', 'Bạn đã thêm hạn mức chi tiêu mỗi tháng', backgroundColor: Colors.green);
+                  Get.to(()=>Schedule());
                 }else{
                   Get.snackbar('Lỗi!', 'Bạn đã đặt hạn mức cho khoản này rồi', backgroundColor: Colors.green);
                 }

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:quan_ly_chi_tieu/screens/authentication/register.dart';
 import 'package:quan_ly_chi_tieu/screens/authentication/reset_password.dart';
-
+import 'package:quan_ly_chi_tieu/repository/api.dart';
 import '../../services/auth.dart';
 import '../navigation_bar/navigation_bar.dart';
 
@@ -17,6 +17,7 @@ class SignIn extends StatefulWidget {
 
 class _SignInState extends State<SignIn> {
   final Authservice auth = Authservice();
+  final apiService = Api();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
   RxString alert = ''.obs;
@@ -83,11 +84,13 @@ class _SignInState extends State<SignIn> {
               style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.green) ),
               onPressed: ()async {
                 await auth.signWithEmail(email.text, password.text);
+                await apiService.login(email.text, password.text);
                 var uid = FirebaseAuth.instance.currentUser?.uid;
                 if(uid == null){
                   print("Tai khoan hoac mat khau khong dung");
                   alert.value = 'Username or password incorrect';
                 }else{
+                  await apiService.writeToFile(email.text, password.text);
                   Get.off(()=> const Navigation());
                   alert.value ='';
                 }

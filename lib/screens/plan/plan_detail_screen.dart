@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:quan_ly_chi_tieu/services/future.dart';
 
+import '../../repository/api.dart';
 import '../navigation_bar/navigation_bar.dart';
 
 class PlanDetail extends StatelessWidget {
@@ -14,6 +16,7 @@ class PlanDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     FirebaseAuth auth = FirebaseAuth.instance;
+    final service = AsyncData();
     TextEditingController planController = TextEditingController();
     planController.text = plan;
     return Scaffold(
@@ -83,7 +86,6 @@ class PlanDetail extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: (){
-                  String coll = auth.currentUser?.email.toString()??'unknow';
                   Get.defaultDialog(
                       radius: 10,
                       buttonColor: Colors.green,
@@ -92,8 +94,7 @@ class PlanDetail extends StatelessWidget {
                       middleText: "Bạn có muốn xoá không?",
                       onCancel: (){},
                       onConfirm: (){
-                        FirebaseFirestore.instance.collection("${coll}plan")
-                            .doc(keys).delete();
+                        service.deletePlan(keys);
                         Get.back();
                         Get.back();
                       }
@@ -119,16 +120,8 @@ class PlanDetail extends StatelessWidget {
               ),
               GestureDetector(
                 onTap: ()async{
-                  String coll = auth.currentUser?.email.toString()??'unknow';
-                  await FirebaseFirestore.instance
-                      .collection("${coll}plan").doc(keys)
-                      .update(
-                      {
-                        'keys': keys,
-                        'plan': planController.text,
-                        'value': value,
-                      }
-                  );
+                  await service.updatePlan(keys, planController.text, value);
+
                   Get.back();
                 },
                 child: Container(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../repository/api.dart';
 import '../../services/auth.dart';
 import '../navigation_bar/navigation_bar.dart';
 
@@ -12,6 +13,7 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   final Authservice auth = Authservice();
+  final apiService = Api();
   final formKey = GlobalKey<FormState>();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
@@ -112,12 +114,16 @@ class _RegisterState extends State<Register> {
                   backgroundColor: MaterialStateProperty.all(Colors.green)),
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
+                  var res = await apiService.createUser(email.text, password.text);
+                  print("create user:");
+                  await apiService.writeToFile(email.text, password.text);
+                  await apiService.login(email.text, password.text);
                   dynamic result =
                       await auth.registerWithEmail(email.text, password.text);
                   if (result == null) {
                     print("can not register");
                   }
-                  Get.to(() => const Navigation());
+                  Get.off(() => const Navigation());
                 } else {
                   Get.defaultDialog(title: 'Warnning', middleText: 'Email has used', backgroundColor: Colors.white);
                 }

@@ -1,13 +1,12 @@
-import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:quan_ly_chi_tieu/repository/api.dart';
 import 'package:quan_ly_chi_tieu/screens/add_screen/category.dart';
 import 'package:quan_ly_chi_tieu/screens/add_screen/spending_detail.dart';
-import 'package:quan_ly_chi_tieu/screens/bar_char_test.dart';
 import 'package:quan_ly_chi_tieu/models/spending_model.dart';
 import 'package:quan_ly_chi_tieu/screens/bars/bar_chart_2.dart';
 import 'package:quan_ly_chi_tieu/services/future.dart';
@@ -23,9 +22,10 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   FirebaseAuth auth = FirebaseAuth.instance;
   final sevices = AsyncData();
+  final apiService = Api();
   NumberFormat numberFormat = NumberFormat("#,##0", "en_US");
   DateFormat format = DateFormat("dd/MM/yyyy");
-  double totalBalance = 0;
+  RxDouble totalBalance = 0.0.obs;
   final oneWeek = const Duration(days: 7);
   final oneMonth = const Duration(days: 30);
 
@@ -68,7 +68,11 @@ class _HomeState extends State<Home> {
          balance -= int.parse(doc['money'].toString().replaceAll(',', ''));
        }
      }
-     totalBalance = balance;
+     if (balance < 0){
+       totalBalance.value =0;
+     }else {
+       totalBalance.value = balance;
+     }
     return balance;
   }
 
@@ -116,12 +120,12 @@ class _HomeState extends State<Home> {
                         );
                       }
                     ),
-                    Container(
-                      margin: EdgeInsets.only(right: 25),
-                      child: const Icon(
-                        Icons.notifications
-                      ),
-                    )
+                    // Container(
+                    //   margin: EdgeInsets.only(right: 25),
+                    //   child: const Icon(
+                    //     Icons.notifications
+                    //   ),
+                    // )
                   ],
                 ),
               ),
@@ -157,10 +161,10 @@ class _HomeState extends State<Home> {
                         height: 30,
                         fit: BoxFit.cover,
                       ),
-                      trailing: Text(
-                        "${numberFormat.format(totalBalance)} đ",
+                      trailing: Obx(()=>Text(
+                        "${numberFormat.format(totalBalance.value)} đ",
                         style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 17),
-                      ),
+                      ),)
                     ),
                   )
                 ],
@@ -243,13 +247,17 @@ class _HomeState extends State<Home> {
                 children: [
                   Text('Giao dịch gần đây'),
                   FutureBuilder<List<SpendingModel>>(
-                    future: sevices.getAll(),
+                    future: sevices.getAllBill(),//apiService.getAllBill(),
                     builder: (context,AsyncSnapshot<List<SpendingModel>> snapshot){
                       if(snapshot.hasData) {
                         List<SpendingModel> data = snapshot.data!;
+                        var minLength = 0;
+                        if (data.length > 8){
+                          minLength = data.length - 8;
+                        }
                           return Column(
                             children: [
-                              for(var index =0; index <data.length; index++)
+                              for(var index = data.length -1; index >= minLength; index--)
                                 ListTile(
                                   onTap: () {
                                     Get.to(() =>
@@ -296,6 +304,7 @@ class TopSpending extends StatefulWidget {
 class _TopSpendingState extends State<TopSpending> {
 
   FirebaseAuth auth = FirebaseAuth.instance;
+  final api = Api();
 
   Future<List<SpendingModel>> topSpendingData ()async{
     List<SpendingModel> snapshot = [];
@@ -321,6 +330,7 @@ class _TopSpendingState extends State<TopSpending> {
   @override
   Widget build(BuildContext context) {
     AsyncData sevice = AsyncData();
+    final api = Api();
     return FutureBuilder<List<SpendingModel>>(
       future: sevice.GetTopSpendingThisWeek(),
       builder: (context, AsyncSnapshot<List<SpendingModel>> snapshot){

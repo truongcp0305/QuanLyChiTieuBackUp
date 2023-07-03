@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../repository/api.dart';
+import '../../services/future.dart';
 import '../authentication/sign_in.dart';
 
 class UserDetail extends StatelessWidget {
@@ -10,6 +12,7 @@ class UserDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     FirebaseAuth auth = FirebaseAuth.instance;
+    final service = AsyncData();
     return Scaffold(
       body: Column(
         children: [
@@ -25,137 +28,137 @@ class UserDetail extends StatelessWidget {
             ),
           SizedBox(height: 20,),
           Text(
-            auth.currentUser!.email.toString(),
+            FirebaseAuth.instance.currentUser!.email.toString(),
             style: const TextStyle(
               fontSize: 23,
               fontWeight: FontWeight.w400
             ),
           ),
-          SizedBox(height: 30,),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                color: Color(0xffe7e9ee)
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.person,
-                    size: 30,
-                    color: Colors.green,
-                  ),
-                  SizedBox(width: 20,),
-                  Expanded(
-                    child: Text(
-                        "Hồ sơ của tôi",
-                      style: TextStyle(
-                        fontSize: 17,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios
-                  )
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  color: Color(0xffe7e9ee)
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.notifications_active,
-                    size: 30,
-                    color: Colors.green,
-                  ),
-                  SizedBox(width: 20,),
-                  Expanded(
-                    child: Text(
-                      "Thông báo",
-                      style: TextStyle(
-                        fontSize: 17,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios
-                  )
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  color: Color(0xffe7e9ee)
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.settings,
-                    size: 30,
-                    color: Colors.green,
-                  ),
-                  SizedBox(width: 20,),
-                  Expanded(
-                    child: Text(
-                      "Cài đặt",
-                      style: TextStyle(
-                        fontSize: 17,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                  )
-                ],
-              ),
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            child: Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  color: Color(0xffe7e9ee)
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.help_outline,
-                    size: 30,
-                    color: Colors.green,
-                  ),
-                  SizedBox(width: 20,),
-                  Expanded(
-                    child: Text(
-                      "Trợ giúp",
-                      style: TextStyle(
-                        fontSize: 17,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios
-                  )
-                ],
-              ),
-            ),
-          ),
+          SizedBox(height: 400,),
+          // Padding(
+          //   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          //   child: Container(
+          //     padding: EdgeInsets.all(16),
+          //     decoration: BoxDecoration(
+          //       borderRadius: BorderRadius.circular(15),
+          //       color: Color(0xffe7e9ee)
+          //     ),
+          //     child: Row(
+          //       children: [
+          //         Icon(
+          //           Icons.person,
+          //           size: 30,
+          //           color: Colors.green,
+          //         ),
+          //         SizedBox(width: 20,),
+          //         Expanded(
+          //           child: Text(
+          //               "Hồ sơ của tôi",
+          //             style: TextStyle(
+          //               fontSize: 17,
+          //             ),
+          //           ),
+          //         ),
+          //         Icon(
+          //           Icons.arrow_forward_ios
+          //         )
+          //       ],
+          //     ),
+          //   ),
+          // ),
+          // Padding(
+          //   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          //   child: Container(
+          //     padding: EdgeInsets.all(16),
+          //     decoration: BoxDecoration(
+          //         borderRadius: BorderRadius.circular(15),
+          //         color: Color(0xffe7e9ee)
+          //     ),
+          //     child: Row(
+          //       children: [
+          //         Icon(
+          //           Icons.notifications_active,
+          //           size: 30,
+          //           color: Colors.green,
+          //         ),
+          //         SizedBox(width: 20,),
+          //         Expanded(
+          //           child: Text(
+          //             "Thông báo",
+          //             style: TextStyle(
+          //               fontSize: 17,
+          //             ),
+          //           ),
+          //         ),
+          //         Icon(
+          //           Icons.arrow_forward_ios
+          //         )
+          //       ],
+          //     ),
+          //   ),
+          // ),
+          // Padding(
+          //   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          //   child: Container(
+          //     padding: EdgeInsets.all(16),
+          //     decoration: BoxDecoration(
+          //         borderRadius: BorderRadius.circular(15),
+          //         color: Color(0xffe7e9ee)
+          //     ),
+          //     child: Row(
+          //       children: [
+          //         Icon(
+          //           Icons.settings,
+          //           size: 30,
+          //           color: Colors.green,
+          //         ),
+          //         SizedBox(width: 20,),
+          //         Expanded(
+          //           child: Text(
+          //             "Cài đặt",
+          //             style: TextStyle(
+          //               fontSize: 17,
+          //             ),
+          //           ),
+          //         ),
+          //         Icon(
+          //           Icons.arrow_forward_ios,
+          //         )
+          //       ],
+          //     ),
+          //   ),
+          // ),
+          // Padding(
+          //   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          //   child: Container(
+          //     padding: EdgeInsets.all(16),
+          //     decoration: BoxDecoration(
+          //         borderRadius: BorderRadius.circular(15),
+          //         color: Color(0xffe7e9ee)
+          //     ),
+          //     child: Row(
+          //       children: [
+          //         Icon(
+          //           Icons.help_outline,
+          //           size: 30,
+          //           color: Colors.green,
+          //         ),
+          //         SizedBox(width: 20,),
+          //         Expanded(
+          //           child: Text(
+          //             "Trợ giúp",
+          //             style: TextStyle(
+          //               fontSize: 17,
+          //             ),
+          //           ),
+          //         ),
+          //         Icon(
+          //           Icons.arrow_forward_ios
+          //         )
+          //       ],
+          //     ),
+          //   ),
+          // ),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: GestureDetector(
