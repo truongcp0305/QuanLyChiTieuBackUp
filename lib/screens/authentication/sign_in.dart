@@ -83,10 +83,10 @@ class _SignInState extends State<SignIn> {
             ElevatedButton(
               style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.green) ),
               onPressed: ()async {
-                await auth.signWithEmail(email.text, password.text);
-                await apiService.login(email.text, password.text);
-                var uid = FirebaseAuth.instance.currentUser?.uid;
-                if(uid == null){
+                //await auth.signWithEmail(email.text, password.text);
+                var is_s = await apiService.login(email.text, password.text);
+                //var uid = FirebaseAuth.instance.currentUser?.uid;
+                if(!is_s){
                   print("Tai khoan hoac mat khau khong dung");
                   alert.value = 'Username or password incorrect';
                 }else{

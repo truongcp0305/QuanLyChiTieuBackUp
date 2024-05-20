@@ -15,11 +15,11 @@ import '../models/plan_model.dart';
 import '../screens/bars/pie_chart_test.dart';
 
 class Api {
-  final domain = "https://toan.fly.dev/";
+  final domain = "http://192.168.1.26:1234";
 
   String generateUUID() {
     var uuid = Uuid();
-    print("uuuuuuid:");
+
     print(uuid.v4());
     return uuid.v4();
   }
@@ -29,6 +29,20 @@ class Api {
     final path = directory.path;
     final file = File('$path/data.txt');
     return file;
+  }
+
+  Future<File> getFileId() async{
+    final directory = await getApplicationDocumentsDirectory();
+    final path = directory.path;
+    final file = File('$path/id.txt');
+    return file;
+  }
+
+  Future<void> writeIdFile (id) async{
+    final file = await getFileId();
+    final sink = file.openWrite(mode: FileMode.write);
+    sink.write('{"id":"$id"}');
+    await sink.close();
   }
 
   Future<void> writeToFile (username, password) async{
@@ -50,27 +64,25 @@ class Api {
   }
 
   Future<String> getId () async{
-    final user = await readFile();
-    var url = Uri.parse( '${domain}user/login');
-    var response = await http.post(url, body: {
-    'username': user.username,
-    'password': user.password,
-    },);
-    if (response.statusCode ==200){
-      final parsed = json.decode(response.body);
-      return parsed['user_id'];
+    final file = await getFileId();
+    if (await file.exists()){
+      final contents = await file.readAsString();
+      var decode = jsonDecode(contents);
+      return decode["id"];
     }else{
-      return '';
+      return "";
     }
   }
 
   Future<bool> login(username, password) async {
-    var url = Uri.parse( '${domain}user/login');
-    var response = await http.post(url, body: {
-      'username': username,
-      'password': password,
-    },);
+    var url = Uri.parse( '${domain}/user/login');
+    var headers = {'Content-Type': 'application/json'};
+    var body = json.encode({'username': username, 'password': password});
+    var response = await http.post(url, headers: headers, body: body);
     if (response.statusCode == 200) {
+      final parsed = json.decode(response.body);
+      print(parsed["id"]);
+      writeIdFile(parsed["id"]);
       return true;
     } else {
       return false;
@@ -79,7 +91,7 @@ class Api {
 
   Future<bool>logout()async{
     var userId = getId();
-    var url = Uri.parse( '${domain}user/logout');
+    var url = Uri.parse( '${domain}/user/logout');
     var response = await http.post(url, body: {
       'user_id': userId,
     },);
@@ -123,17 +135,20 @@ class Api {
 
   Future<bool> createBill (String id, String money, String type, String icon, String category, String time,DateTime myDate, String note)async{
     var userId = await getId();
-    var url = Uri.parse( '${domain}bill');
-    var response = await http.post(url, body: {
+    var url = Uri.parse( '${domain}/bill');
+    var body = json.encode({
       'user_id': userId,
       'id': id,
       'money': money,
       'icon': icon,
       'type': type,
       'category': category,
-      'time': time+ 'T00:00:00Z',
+      'time': time + 'T00:00:00Z',
       'note': note,
-    },);
+    });
+
+    var headers = {'Content-Type': 'application/json'};
+    var response = await http.post(url, headers: headers, body: body);
     if (response.statusCode==200){
       return true;
     }else {
@@ -142,22 +157,33 @@ class Api {
   }
 
   Future<List<SpendingModel>> getAllBill () async{
+    List<SpendingModel> result = [];
     var userId = await getId();
-    var url = Uri.parse( 'https://toan.fly.dev/bill/getAll?user_id=$userId');
+    var url = Uri.parse('${domain}/spends/$userId');
     var response = await http.get(url);
-    print(response.statusCode);
     if (response.statusCode==200){
       final parsed = json.decode(response.body);
-      List<SpendingModel> listSpend = (parsed['data'] as List<dynamic>).map((item)=> SpendingModel(
-        id: item['id'],
-        money: item['money'],
-        icon: item['icon'],
-        category: item['category'],
-        time: parseDateTime(item['time']),
-        type: item['type'],
-        note: item['note']
-      )).toList();
-      return listSpend;
+      for (var doc in parsed['data'] as List<dynamic>){
+        result.add(SpendingModel(
+          id: doc['id'],
+          money: doc['money'],
+          icon: doc['icon'],
+          category: doc['category'],
+          time: doc['time'],
+          type: doc['type'],
+          note: doc['note']
+        ));
+      }
+      // List<SpendingModel> listSpend = (parsed['data'] as List<dynamic>).map((item)=> SpendingModel(
+      //   id: item['id'],
+      //   money: item['money'],
+      //   icon: item['icon'],
+      //   category: item['category'],
+      //   time: parseDateTime(item['time']),
+      //   type: item['type'],
+      //   note: item['note']
+      // )).toList();
+      return result;
     }else {
       List<SpendingModel> listSpend = [];
       return listSpend;
@@ -165,8 +191,7 @@ class Api {
   }
 
   Future<SpendingModel> getBill (String id) async{
-    var idUser = await getId();
-    var url = Uri.parse( '${domain}bill?user_id=$idUser&id=$id');
+    var url = Uri.parse( '${domain}/spend/$id');
     var response = await http.get(url);
     if (response.statusCode ==200){
       final parsed = json.decode(response.body);

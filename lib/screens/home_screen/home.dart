@@ -58,14 +58,13 @@ class _HomeState extends State<Home> {
 
   Future<double> getBalance ()async{
     double balance = 0;
-    var data = await FirebaseFirestore.instance
-        .collection(auth.currentUser?.email.toString()??'unknow')
-        .get();
-     for(var doc in data.docs ){
-       if(doc['type']=='+') {
-         balance += int.parse(doc['money'].toString().replaceAll(',', ''));
-       }else if(doc['type']=='-'){
-         balance -= int.parse(doc['money'].toString().replaceAll(',', ''));
+    var data = await sevices.getAllBill();
+     for(var doc in data ){
+       print(doc);
+       if(doc.type=='+') {
+         balance += int.parse(doc.money.toString().replaceAll(',', ''));
+       }else if(doc.type=='-'){
+         balance -= int.parse(doc.money.toString().replaceAll(',', ''));
        }
      }
      if (balance < 0){
@@ -101,6 +100,7 @@ class _HomeState extends State<Home> {
                       future: getBalance(),
                       builder: (context, AsyncSnapshot<double> snapshot) {
                         if(snapshot.hasData){
+                          print(snapshot.data);
                           return Text(
                             "${numberFormat.format(snapshot.data)} đ",
                             style: const TextStyle(
@@ -109,6 +109,8 @@ class _HomeState extends State<Home> {
                                 fontSize: 30
                             ),
                           );
+                        }else{
+                          print("nodara");
                         }
                         return const Text(
                             "No data",

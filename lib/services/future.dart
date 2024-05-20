@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:charts_flutter/flutter.dart';
@@ -9,9 +10,12 @@ import '../models/spending_model.dart';
 import '../repository/api.dart';
 import '../screens/bars/bar_chart_2.dart';
 import '../screens/bars/pie_chart_test.dart';
+import 'package:http/http.dart' as http;
+
 
 
 class AsyncData {
+  final domain = "http://192.168.1.26:1234";
   FirebaseAuth auth = FirebaseAuth.instance;
   DateFormat format = DateFormat("dd/MM/yyyy");
   DateFormat formatM = DateFormat('MM');
@@ -31,25 +35,26 @@ class AsyncData {
   ];
 
   Future<List<SpendingModel>> getAllBill() async {
-    List<SpendingModel> snapshot = [];
-    var data = await FirebaseFirestore.instance
-        .collection(auth.currentUser?.email.toString() ?? 'unknow')
-        .get();
-    for (var doc in data.docs) {
-      snapshot.add(
-          SpendingModel(
-              id: doc['id'],
-              money: doc['money'],
-              //double.parse(doc['money'].toString().replaceAll(',', '')),
-              icon: doc['icon'],
-              category: doc['category'],
-              time: doc['time'],
-              type: doc['type'],
-              note: doc['note']
-          )
-      );
-    }
-    return snapshot;
+    // List<SpendingModel> snapshot = [];
+    // var data = await FirebaseFirestore.instance
+    //     .collection(auth.currentUser?.email.toString() ?? 'unknow')
+    //     .get();
+    // for (var doc in data.docs) {
+    //   snapshot.add(
+    //       SpendingModel(
+    //           id: doc['id'],
+    //           money: doc['money'],
+    //           //double.parse(doc['money'].toString().replaceAll(',', '')),
+    //           icon: doc['icon'],
+    //           category: doc['category'],
+    //           time: doc['time'],
+    //           type: doc['type'],
+    //           note: doc['note']
+    //       )
+    //   );
+    // }
+    // return snapshot;
+    return await api.getAllBill();
   }
 
   Future<List<SpendingModel>> GetTopSpendingThisWeek() async {
@@ -84,29 +89,30 @@ class AsyncData {
         weekDay = const Duration(days: 0);
         break;
     }
-    var res = await FirebaseFirestore.instance
-        .collection(auth.currentUser?.email.toString() ?? 'unknow')
-        .get();
-    for (var doc in res.docs) {
-      String date = doc['time'];
-      Duration sub = format.parse(dateNow).difference(format.parse(date));
-      if (sub <= weekDay) {
-        if (doc['type'] == '-') {
-          data.add(
-              SpendingModel(
-                  id: doc['id'],
-                  money: doc['money'],
-                  //double.parse(doc['money'].toString().replaceAll(',', '')),
-                  icon: doc['icon'],
-                  category: doc['category'],
-                  time: doc['time'],
-                  type: doc['type'],
-                  note: doc['note']
-              )
-          );
-        }
-      }
-    }
+    // var res = await FirebaseFirestore.instance
+    //     .collection(auth.currentUser?.email.toString() ?? 'unknow')
+    //     .get();
+    // for (var doc in res.docs) {
+    //   String date = doc['time'];
+    //   Duration sub = format.parse(dateNow).difference(format.parse(date));
+    //   if (sub <= weekDay) {
+    //     if (doc['type'] == '-') {
+    //       data.add(
+    //           SpendingModel(
+    //               id: doc['id'],
+    //               money: doc['money'],
+    //               //double.parse(doc['money'].toString().replaceAll(',', '')),
+    //               icon: doc['icon'],
+    //               category: doc['category'],
+    //               time: doc['time'],
+    //               type: doc['type'],
+    //               note: doc['note']
+    //           )
+    //       );
+    //     }
+    //   }
+    // }
+    data  = await api.getAllBill();
 
     SpendingModel tg;
     for (var s = 0; s < data.length - 1; s++) {
@@ -279,15 +285,17 @@ class AsyncData {
         weekDay = const Duration(days: 0);
         break;
     }
-    var data = await FirebaseFirestore.instance
-        .collection(auth.currentUser?.email.toString() ?? 'unknow')
-        .get();
-    for (var doc in data.docs) {
-      String date = doc['time'];
+    // var data = await FirebaseFirestore.instance
+    //     .collection(auth.currentUser?.email.toString() ?? 'unknow')
+    //     .get();
+    var data = await api.getAllBill();
+
+    for (var doc in data) {
+      String date = doc.time;
       Duration sub = format.parse(dateNow).difference(format.parse(date));
       if (sub <= oneWeek + weekDay && sub > weekDay) {
-        if (doc['type'] == '-') {
-          balance += int.parse(doc['money'].toString().replaceAll(',', ''));
+        if (doc.type == '-') {
+          balance += int.parse(doc.money.toString().replaceAll(',', ''));
         }
       }
     }
@@ -325,15 +333,13 @@ class AsyncData {
         weekDay = const Duration(days: 0);
         break;
     }
-    var data = await FirebaseFirestore.instance
-        .collection(auth.currentUser?.email.toString() ?? 'unknow')
-        .get();
-    for (var doc in data.docs) {
-      String date = doc['time'];
+    var data = await api.getAllBill();
+    for (var doc in data) {
+      String date = doc.time;
       Duration sub = format.parse(dateNow).difference(format.parse(date));
       if (sub <= weekDay) {
-        if (doc['type'] == '-') {
-          balance += int.parse(doc['money'].toString().replaceAll(',', ''));
+        if (doc.type == '-') {
+          balance += int.parse(doc.money.toString().replaceAll(',', ''));
         }
       }
     }
@@ -346,12 +352,11 @@ class AsyncData {
     String monthNow = DateFormat('MM').format(DateTime.now());
     String result = '';
     String coll = auth.currentUser?.email.toString() ?? 'unknow';
-    var data = await FirebaseFirestore.instance.collection(coll)
-        .get();
-    for (var doc in data.docs) {
-      String docMonth = DateFormat('MM').format(format.parse(doc['time']));
-      if (docMonth == monthNow && doc['category'] == category) {
-        sum += double.parse(doc['money'].toString().replaceAll(',', ''));
+    var data = await api.getAllBill();
+    for (var doc in data) {
+      String docMonth = DateFormat('MM').format(format.parse(doc.time));
+      if (docMonth == monthNow && doc.category == category) {
+        sum += double.parse(doc.money.toString().replaceAll(',', ''));
       }
     }
     result = "${(sum / double.parse(plan) * 100).toStringAsFixed(2)}";
@@ -405,33 +410,40 @@ class AsyncData {
 
   Future<bool> createBill(String id, String money, String type, String icon,
       String category, String time, DateTime myDate, String note) async {
-    await FirebaseFirestore.instance
-        .collection(auth.currentUser?.email.toString() ?? 'unknow')
-        .doc(id).set(
-        {
-          'id': id, //DateTime.now().toString(),
-          'money': money,
-          'category': category,
-          'icon': icon,
-          'time': DateFormat('dd/MM/yyyy').format(myDate),
-          'note': note,
-          'type': type
-        }
-    );
-    var res = await api.createBill(
-        id,
-        money,
-        type,
-        icon,
-        category,
-        time,
-        myDate,
-        note);
-    // if (res){
-    //   return true;
-    // }else{
-    //   return false;
-    // }
+    var userId = await api.getId();
+    var url = Uri.parse( '${domain}/spend');
+    var body = json.encode({
+      'user_id': userId,
+      'id': id,
+      'money': money,
+      'icon': icon,
+      'type': type,
+      'category': category,
+      'time': DateFormat('dd/MM/yyyy').format(myDate),
+      'note': note,
+    });
+
+    var headers = {'Content-Type': 'application/json'};
+    var response = await http.post(url, headers: headers, body: body);
+    //
+    // await FirebaseFirestore.instance
+    //     .collection(auth.currentUser?.email.toString() ?? 'unknow')
+    //     .doc(id).set(
+    //     {
+    //       'id': id, //DateTime.now().toString(),
+    //       'money': money,
+    //       'category': category,
+    //       'icon': icon,
+    //       'time': DateFormat('dd/MM/yyyy').format(myDate),
+    //       'note': note,
+    //       'type': type
+    //     }
+    // );
+    if (response.statusCode==200){
+      return true;
+    }else {
+      return false;
+    }
     return true;
   }
 
