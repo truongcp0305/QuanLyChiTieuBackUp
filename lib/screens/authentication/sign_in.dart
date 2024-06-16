@@ -16,7 +16,7 @@ class SignIn extends StatefulWidget {
 }
 
 class _SignInState extends State<SignIn> {
-  final Authservice auth = Authservice();
+  //final Authservice auth = Authservice();
   final apiService = Api();
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();

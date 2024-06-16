@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:quan_ly_chi_tieu/models/spending_model.dart';
 import 'package:quan_ly_chi_tieu/models/user_model.dart';
+import 'package:quan_ly_chi_tieu/services/future.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -15,7 +16,71 @@ import '../models/plan_model.dart';
 import '../screens/bars/pie_chart_test.dart';
 
 class Api {
-  final domain = "http://192.168.1.26:1234";
+  final domain = "http://192.168.214.146:1234";
+
+  //var sv = AsyncData();
+  String KeymappingBD(String key) {
+    var mapping = {
+      "Ăn uống": "food",
+      "Đồ dùng học tập": "ruler",
+      "Di chuyển": "move",
+      "May mặc": "clother",
+      "Thuê nhà": "house",
+      "Điện nước": "electric",
+      "Hoá đơn tiện ích khác": "bill",
+      "Học phí": "fee",
+      "Đồ dùng cá nhân": "tool",
+      "Bảo dưỡng đồ dùng": "repair",
+      "Sức khoẻ": "health",
+      "Thể thao": "sport",
+      "Cho vay": "rent",
+      "Trả nợ": "payment",
+      "Các khoản khác": "others",
+      "Lương": "salary",
+      "Gia đình": "family",
+      "Thu nợ": "received",
+      "Đi vay": "loan",
+      "Thu nhập khác": "otherss"
+    };
+    var a = mapping[key];
+    if  (a != null) {
+      return a!;
+    }else{
+      return "";
+    }
+  }
+
+  String DBmappingKey(String key){
+    var mapping = {
+      "food": "Ăn uống",
+      "ruler": "Đồ dùng học tập",
+      "move": "Di chuyển",
+      "clother": "May mặc",
+      "house": "Thuê nhà",
+      "Điện nước": "electric",
+      "bill": "Hoá đơn tiện ích khác",
+      "fee": "Học phí",
+      "tool": "Đồ dùng cá nhân",
+      "repair": "Bảo dưỡng đồ dùng",
+      "health": "Sức khoẻ",
+      "sport": "Thể thao",
+      "rent": "Cho vay",
+      "payment": "Trả nợ",
+      "other": "Các khoản khác",
+      "salary": "Lương",
+      "family": "Gia đình",
+      "received": "Thu nợ",
+      "loan": "Đi vay",
+      "otherss": "Thu nhập khác"
+    };
+    var a = mapping[key];
+    if  (a != null) {
+      return a!;
+    }else{
+      return "";
+    }
+  }
+
 
   String generateUUID() {
     var uuid = Uuid();
@@ -164,15 +229,17 @@ class Api {
     if (response.statusCode==200){
       final parsed = json.decode(response.body);
       for (var doc in parsed['data'] as List<dynamic>){
-        result.add(SpendingModel(
-          id: doc['id'],
-          money: doc['money'],
-          icon: doc['icon'],
-          category: doc['category'],
-          time: doc['time'],
-          type: doc['type'],
-          note: doc['note']
-        ));
+        var sp = SpendingModel(
+            id: doc['id'],
+            money: doc['money'],
+            icon: doc['icon'],
+            category: doc['category'],
+            time: doc['time'],
+            type: doc['type'],
+            note: doc['note']
+        );
+        sp.category = DBmappingKey(sp.category);
+            result.add(sp);
       }
       // List<SpendingModel> listSpend = (parsed['data'] as List<dynamic>).map((item)=> SpendingModel(
       //   id: item['id'],
@@ -195,15 +262,17 @@ class Api {
     var response = await http.get(url);
     if (response.statusCode ==200){
       final parsed = json.decode(response.body);
-      return SpendingModel(
-        id: parsed['id'],
-        money: parsed['money'],
-        icon: parsed['icon'],
-        category: parsed['category'],
-        time: parsed['time'],
-        type: parsed['type'],
-        note: parsed['note']
+      var sp = SpendingModel(
+          id: parsed['id'],
+          money: parsed['money'],
+          icon: parsed['icon'],
+          category: parsed['category'],
+          time: parsed['time'],
+          type: parsed['type'],
+          note: parsed['note']
       );
+      sp.category = DBmappingKey(sp.category);
+      return sp;
     }else {
       return SpendingModel(
         id: '',
@@ -227,7 +296,7 @@ class Api {
           id: item['id'],
           money: item['money'],
           icon: item['icon'],
-          category: item['category'],
+          category: DBmappingKey(item['category']),
           time: item['time'],
           type: item['type'],
           note: item['note']
@@ -249,7 +318,7 @@ class Api {
           id: item['id'],
           money: item['money'],
           icon: item['icon'],
-          category: item['category'],
+          category: DBmappingKey(item['category']),
           time: item['time'],
           type: item['type'],
           note: item['note']
@@ -264,11 +333,8 @@ class Api {
   Future<bool> deleteBill (String id)async{
     var userId = await getId();
     await getUsers(id);
-    var url = Uri.parse( '${domain}bill');
-    var response = await http.delete(url, body: {
-      'user_id': userId,
-      'id': id,
-    });
+    var url = Uri.parse( '${domain}/spend/$id');
+    var response = await http.delete(url, body: {});
     if (response.statusCode == 200){
       return true;
     }else{
@@ -278,17 +344,20 @@ class Api {
 
   Future<bool> updateBill (String id, String money, String type, String icon, String category, String time,String mydate, String note)async{
     var userId = await getId();
-    var url = Uri.parse( '${domain}bill');
-    var response = await http.put(url, body: {
+    var url = Uri.parse( '${domain}/spend');
+    var body = json.encode({
       'user_id': userId,
       'id': id,
       'money': money,
       'icon': icon,
       'type': type,
-      'category': category,
-      'time': mydate+ 'T00:00:00Z',
+      'category': KeymappingBD(category),
+      'time': time,
       'note': note,
-    },);
+    });
+
+    var headers = {'Content-Type': 'application/json'};
+    var response = await http.put(url, headers: headers, body: body);
     if (response.statusCode==200){
       return true;
     }else {
@@ -316,7 +385,7 @@ class Api {
               id: item['id'],
               money: item['money'],
               icon: item['icon'],
-              category: item['category'],
+              category: DBmappingKey(item['category']),
               time: item['time'],
               type: item['type'],
               note: item['note']
@@ -345,7 +414,7 @@ class Api {
     if (response.statusCode == 200){
       final parsed = json.decode(response.body);
       List<PlanModel> plans = (parsed['data'] as List<dynamic>).map((item) =>
-          PlanModel(value: parsed['value'], key: parsed['key'], plan: parsed['plan'])
+          PlanModel(value: parsed['value'], key: DBmappingKey(parsed['key']), plan: parsed['plan'])
       ).toList();
       return plans;
     }else{
@@ -360,7 +429,7 @@ class Api {
     var url = Uri.parse( '${domain}plan');
     var response = await http.post(url, body: {
       'user_id': userId,
-      'key': key,
+      'key': KeymappingBD(key),
       'value': value,
       'plan': plan,
     },);
@@ -375,7 +444,7 @@ class Api {
     var url = Uri.parse('${domain}plan');
     var respone = await http.put(url, body: {
       'user_id': userId,
-      'key': key,
+      'key': KeymappingBD(key),
       'value': value,
       'plan':plan
     });
@@ -391,7 +460,7 @@ class Api {
     var url = Uri.parse('${domain}plan');
     var respone = await http.delete(url, body:{
       'user_id': userId,
-      'key': key,
+      'key': KeymappingBD(key),
     });
     deleteKeys(key);
     if (respone.statusCode == 200){
@@ -409,7 +478,7 @@ class Api {
       final parsed = json.decode(response.body);
       List<ChartPData> chartData = (parsed['data'] as List<dynamic>).map((item) =>
           ChartPData(
-              x: parsed['category'],
+              x: DBmappingKey(parsed['category']),
               y: double.parse(parsed['money'].toString().replaceAll(',', '')),
               color: Colors.primaries[Random().nextInt(Colors.primaries.length)])
       ).toList();
@@ -434,7 +503,7 @@ class Api {
               id: item['id'],
               money: item['money'],
               icon: item['icon'],
-              category: item['category'],
+              category: DBmappingKey(item['category']),
               time: item['time'],
               type: item['type'],
               note: item['note']
@@ -461,7 +530,7 @@ class Api {
               id: item['id'],
               money: item['money'],
               icon: item['icon'],
-              category: item['category'],
+              category: DBmappingKey(item['category']),
               time: item['time'],
               type: item['type'],
               note: item['note']

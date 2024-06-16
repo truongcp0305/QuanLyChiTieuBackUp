@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:quan_ly_chi_tieu/models/plan_model.dart';
+import 'package:quan_ly_chi_tieu/repository/api.dart';
 import 'package:quan_ly_chi_tieu/screens/plan/category_plan_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:quan_ly_chi_tieu/screens/plan/plan_detail_screen.dart';
@@ -18,16 +20,42 @@ class Schedule extends StatefulWidget {
 }
 
 class _ScheduleState extends State<Schedule> {
-  FirebaseAuth auth = FirebaseAuth.instance;
+  //FirebaseAuth auth = FirebaseAuth.instance;
   AsyncData sevice = AsyncData();
   NumberFormat numberFormat = NumberFormat("#,##0", "en_US");
+  final domain = "http://192.168.214.146:1234";
+  Api api = Api();
 
-  Stream<QuerySnapshot> snapshot(){
-    String coll = auth.currentUser?.email.toString()??'unknow';
-    var data = FirebaseFirestore.instance
-        .collection("${coll}plan")
-        .snapshots();
-    return data;
+
+  Stream<List<PlanModel>> snapshot() async*{
+    // String coll = auth.currentUser?.email.toString()??'unknow';
+    // var data = FirebaseFirestore.instance
+    //     .collection("${coll}plan")
+    //     .snapshots();
+    // return data;
+    var userId = await api.getId();
+    while (true) {
+      List<PlanModel> data = [];
+      final response = await http.get(Uri.parse("$domain/plan/$userId"));
+      if (response.statusCode == 200) {
+        final parsed = json.decode(response.body);
+        if (parsed['data'] != null){
+          for (var doc in parsed['data'] as List<dynamic>) {
+            data.add(PlanModel(
+                key: doc['key'],
+                value: doc['value'],
+                plan: doc['plan']
+            ));
+          }
+        }
+
+        yield data;
+      } else {
+        // Handle error scenario (e.g., throw exception or yield an error message)
+        yield data;
+      }
+      await Future.delayed(Duration(seconds: 5)); // Simulate delay between requests (adjust as needed)
+    }
   }
 
   @override
@@ -43,18 +71,15 @@ class _ScheduleState extends State<Schedule> {
         child: Column(
           children: [
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
+              child: StreamBuilder<List<PlanModel>>(
                 stream: snapshot(),
-                builder: (context,AsyncSnapshot<QuerySnapshot> snapshot){
+                builder: (context,AsyncSnapshot<List<PlanModel>> snapshot){
                   if(snapshot.hasData){
                    List<PlanModel> data = [];
-                   for(var doc in snapshot.data!.docs){
-                     PlanModel model = PlanModel(
-                       key: doc['keys'],
-                       value: doc['value'],
-                       plan: doc['plan']
-                     );
-                     data.add(model);
+                   for(var doc in snapshot.data!){
+                     print("doc cate:" + doc.key);
+                      print("doc paln" +doc.plan);
+                     data.add(doc);
                    }
                    if(data.length == 0 ){
                      return  Center(

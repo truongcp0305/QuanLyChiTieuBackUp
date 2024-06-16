@@ -100,7 +100,6 @@ class _HomeState extends State<Home> {
                       future: getBalance(),
                       builder: (context, AsyncSnapshot<double> snapshot) {
                         if(snapshot.hasData){
-                          print(snapshot.data);
                           return Text(
                             "${numberFormat.format(snapshot.data)} đ",
                             style: const TextStyle(

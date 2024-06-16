@@ -27,13 +27,36 @@ class UserDetail extends StatelessWidget {
               )
             ),
           SizedBox(height: 20,),
-          Text(
-            FirebaseAuth.instance.currentUser!.email.toString(),
-            style: const TextStyle(
-              fontSize: 23,
-              fontWeight: FontWeight.w400
-            ),
+          FutureBuilder<String>(
+            future: service.GetUserEmail(),
+              builder: (context, AsyncSnapshot<String> snapshot){
+                if(snapshot.hasData){
+                  return Text(
+                    "${snapshot.data}",
+                      style: const TextStyle(
+                          fontSize: 23,
+                          fontWeight: FontWeight.w400
+                      ),
+                  );
+                }else{
+                  return Text(
+                    "",
+                    style: const TextStyle(
+                        fontSize: 23,
+                        fontWeight: FontWeight.w400
+                    ),
+                  );
+                }
+              },
+
           ),
+          // Text(
+          //   FirebaseAuth.instance.currentUser!.email.toString(),
+          //   style: const TextStyle(
+          //     fontSize: 23,
+          //     fontWeight: FontWeight.w400
+          //   ),
+          // ),
           SizedBox(height: 400,),
           // Padding(
           //   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
